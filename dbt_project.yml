@@ -1,0 +1,29 @@
+name: mcp_dbt_lab
+version: "1.0.0"
+config-version: 2
+profile: mcp_dbt_lab
+
+model-paths: ["models"]
+seed-paths: ["seeds/clean"]      # only clean lookup data is dbt-managed
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  mcp_dbt_lab:
+    sa:
+      +materialized: view        # cheap, transparent staging
+      +tags: ["staging"]
+    int:
+      +materialized: view
+      +tags: ["intermediate"]
+    ca:
+      +materialized: table       # fast reads for BI / MCP tools
+      +tags: ["marts"]
+
+seeds:
+  mcp_dbt_lab:
+    country_codes:
+      +materialized: seed

@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: dbt-parse
+        name: dbt parse (catch YAML/Jinja errors)
+        entry: env DBT_PROFILES_DIR=. uv run dbt parse --quiet
+        language: system
+        pass_filenames: false
+        files: ^(models|seeds|macros|tests|dbt_project\.yml|profiles\.yml)/
+      - id: block-push-from-main
+        name: Block direct pushes from main
+        entry: sh scripts/check_push_branch.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
