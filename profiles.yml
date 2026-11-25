@@ -1,0 +1,8 @@
+mcp_dbt_lab:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'duckdb/lab.duckdb') }}"
+      schema: main
+      threads: 4

@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Format & static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: |
+          uv python install
+          uv sync --frozen
+
+      - name: pre-commit (ruff, YAML, whitespace, dbt parse)
+        run: uv run pre-commit run --all-files
+
+  dbt:
+    name: dbt parse + unit/data tests
+    runs-on: ubuntu-latest
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}
+      DBT_DUCKDB_PATH: ${{ github.workspace }}/duckdb/ci.duckdb
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: |
+          uv python install
+          uv sync --frozen
+
+      - name: Python unit tests for the seed loader
+        run: uv run pytest -q
+
+      - name: Clean raw CSVs into DuckDB
+        run: uv run python scripts/process_seeds.py
+
+      - name: dbt parse (YAML/Jinja validity)
+        run: uv run dbt parse
+
+      - name: dbt seed (lookup data)
+        run: uv run dbt seed --select country_codes
+
+      - name: dbt build (models, unit tests, data tests)
+        run: uv run dbt build
+
+      - name: Explicit unit-test check
+        run: uv run dbt test --select test_type:unit
+
+      - name: Generate docs/catalog
+        run: uv run dbt docs generate
+
+      - name: Upload dbt artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-artifacts
+          path: target/

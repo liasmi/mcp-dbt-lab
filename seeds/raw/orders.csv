@@ -1,0 +1,7 @@
+order_id,customer_id,order_date,amount,status
+1,10,2026-01-01,"$120.50",completed
+2,10,2026-01-02,"$40.00",CANCELLED
+3,11,2026-01-03,"$75.25",completed
+4,12,2026-01-04,"$10.00", pending
+5,11,2026-01-05,"$25.00",refunded
+5,11,2026-01-05,"$25.00",refunded

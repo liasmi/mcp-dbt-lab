@@ -1,0 +1,15 @@
+[project]
+name = "mcp-dbt-lab"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "certifi>=2026.11.20",
+    "dbt-duckdb>=1.9,<2",
+    "duckdb>=2.0.1",
+    "mcp[cli]>=2",
+    "openai>=3.59.0",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "python-dotenv>=1.2.4",
+    "ruff>=0.17.6",
+]

@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: CA layer — one order per row with amounts in dollars.
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: amount_usd
+        tests: [not_null]
+
+  - name: dim_customers
+    description: CA layer — one row per customer with country and lifetime stats.
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: completed_order_count
+        tests: [not_null]

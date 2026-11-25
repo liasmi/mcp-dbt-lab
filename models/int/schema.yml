@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: int_customer_order_stats
+    description: INT layer — reusable per-customer statistics over completed orders only.
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+
+unit_tests:
+  - name: test_only_completed_orders_are_counted
+    description: Cancelled and pending orders must not affect customer stats.
+    model: int_customer_order_stats
+    given:
+      - input: ref('stg_orders')
+        rows:
+          - {order_id: 1, customer_id: 10, order_date: 2026-01-01, amount_cents: 10000, status: completed}
+          - {order_id: 2, customer_id: 10, order_date: 2026-01-02, amount_cents:  4000, status: cancelled}
+          - {order_id: 3, customer_id: 11, order_date: 2026-01-03, amount_cents:  7500, status: pending}
+    expect:
+      rows:
+        - {customer_id: 10, completed_order_count: 1, lifetime_amount_cents: 10000, first_completed_order_date: 2026-01-01, last_completed_order_date: 2026-01-01}
